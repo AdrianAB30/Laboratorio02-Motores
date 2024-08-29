@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Player_Controller : MonoBehaviour
@@ -11,7 +12,7 @@ public class Player_Controller : MonoBehaviour
     public bool isColliding = false;
     [SerializeField] private float speed;
     [SerializeField] private float jumpForce;
-    [SerializeField] private int playerLife;
+    [SerializeField] private int playerLife = 10;
 
     [Header("Raycast Properties")]
     [SerializeField] private Transform groundCheck;
@@ -28,7 +29,7 @@ public class Player_Controller : MonoBehaviour
 
     private void Awake()
     {
-        myRBD = GetComponent<Rigidbody2D>();
+        myRBD = GetComponent<Rigidbody2D>();    
         mySprite = GetComponent<SpriteRenderer>();
     }
     private void Start()
@@ -96,21 +97,44 @@ public class Player_Controller : MonoBehaviour
         if (playerLife == 0)
         {
             Debug.Log("Moriste");
+            gameManager.EndLevel(false);
+            Destroy(this.gameObject);
         }
     }
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Enemy") || collision.gameObject.CompareTag("Obstacle"))
+        if (collision.gameObject.CompareTag("Enemy"))
         {
-            TakeDamage(1);
             isColliding = true;
+            Color enemyColor = collision.gameObject.GetComponent<SpriteRenderer>().color;
+
+            if (mySprite.color == Color.red && enemyColor == Color.red ||
+                mySprite.color == Color.blue && enemyColor == Color.blue ||
+                mySprite.color == Color.yellow && enemyColor == Color.yellow)
+            {
+                Debug.Log("No recibes daño, son el mismo color");
+            }
+            else
+            {
+                TakeDamage(1);
+            }
+        }
+        else if (collision.gameObject.CompareTag("Final"))
+        {
+            gameManager.EndLevel(true); 
+        }
+        else if (collision.gameObject.CompareTag("Limite"))
+        {
+            TakeDamage(10);
+            Destroy(this.gameObject);
+            gameManager.EndLevel(false);
+            Debug.Log("Moriste de Caida");
         }
     }
-    private void OnCollisionExit2D(Collision2D collision)
+    private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Enemy") || collision.gameObject.CompareTag("Obstacle"))
+        if (collision.gameObject.CompareTag("Enemy"))
         {
-            TakeDamage(1);
             isColliding = false;
         }
     }
