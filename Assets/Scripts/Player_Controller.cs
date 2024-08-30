@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using Unity.UI;
+using UnityEngine.SceneManagement;
 
 public class Player_Controller : MonoBehaviour
 {
@@ -98,7 +100,7 @@ public class Player_Controller : MonoBehaviour
         {
             Debug.Log("Moriste");
             gameManager.EndLevel(false);
-            Destroy(this.gameObject);
+            this.gameObject.SetActive(false);
         }
     }
     private void OnTriggerEnter2D(Collider2D collision)
@@ -119,17 +121,22 @@ public class Player_Controller : MonoBehaviour
                 TakeDamage(1);
             }
         }
-        else if (collision.gameObject.CompareTag("Final"))
-        {
-            gameManager.EndLevel(true); 
+        else if (collision.gameObject.CompareTag("Meta"))
+        {   
+            SceneManager.LoadScene("Game 2");
         }
         else if (collision.gameObject.CompareTag("Limite"))
         {
             TakeDamage(10);
-            Destroy(this.gameObject);
+            this.gameObject.SetActive(false);
             gameManager.EndLevel(false);
             Debug.Log("Moriste de Caida");
         }
+        else if (collision.gameObject.CompareTag("Final"))
+        {
+            gameManager.EndLevel(true);
+            Debug.Log("Ganaste");
+        }       
     }
     private void OnTriggerExit2D(Collider2D collision)
     {

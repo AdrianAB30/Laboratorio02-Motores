@@ -8,6 +8,7 @@ TagManager:
   - Enemy
   - Limite
   - Final
+  - Meta
   layers:
   - Default
   - TransparentFX
