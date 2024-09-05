@@ -4,20 +4,20 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System;
 
 public class GameManager : MonoBehaviour
 {
     [Header("UI Elements")]
     [SerializeField] private GameObject Player;
-    [SerializeField] private TMP_Text TextLife;
     [SerializeField] private TMP_Text TimerText;
-    [SerializeField] private Slider lifeBar;
     [SerializeField] private Camera mainCamera;
     [SerializeField] private GameObject pauseButon;
     [SerializeField] private GameObject menuPause;
     [SerializeField] private GameObject resultsPanel; 
     [SerializeField] private TMP_Text resultsText; 
     [SerializeField] private TMP_Text finalTimeText;
+    [SerializeField] private TMP_Text TextScore;
 
     [Header("Time Elements")]
     [SerializeField] private float timeSpeedFactor = 2.0f;
@@ -33,6 +33,18 @@ public class GameManager : MonoBehaviour
     private bool isPaused = false;
     private bool gameEnded = false;
 
+    private void OnEnable()
+    {
+        Player_Controller.OnChangedScore += UpdateScore;
+        Player_Controller.OnPlayerWin += HandlePlayerWin;
+        Player_Controller.OnPlayerLoose += HandlePlayerLoose;
+    }
+    private void OnDisable()
+    {
+        Player_Controller.OnChangedScore -= UpdateScore;
+        Player_Controller.OnPlayerWin += HandlePlayerWin;
+        Player_Controller.OnPlayerLoose += HandlePlayerLoose;
+    }
     private void Start()
     {
         if (mainCamera != null)
@@ -67,15 +79,15 @@ public class GameManager : MonoBehaviour
 
                 if (shakeDurationTimer > 0)
                 {
-                    float x = Random.Range(-1f, 1f) * shakeMagnitude;
-                    float y = Random.Range(-1f, 1f) * shakeMagnitude;
+                    float x = UnityEngine.Random.Range(-1f, 1f) * shakeMagnitude;
+                    float y = UnityEngine.Random.Range(-1f, 1f) * shakeMagnitude;
                     mainCamera.transform.localPosition = new Vector3(x, y, originalCameraPos.z);
                 }
                 else
                 {
                     mainCamera.transform.localPosition = originalCameraPos;
                     isShaking = false;
-                    shakeTimer = shakeInterval; 
+                    shakeTimer = shakeInterval;
                 }
             }
         }
@@ -142,7 +154,16 @@ public class GameManager : MonoBehaviour
 
         resultsPanel.SetActive(true);
     }
-
+    public void HandlePlayerWin()
+    {
+        EndLevel(true);
+        Debug.Log("Evento de victoria recibido en GameManager");
+    }
+    public void HandlePlayerLoose()
+    {
+        EndLevel(false);
+        Debug.Log("Evento de derrota recibido en GameManager");
+    }
     public void ChangeColorBlue()
     {
         if (Player != null)
@@ -178,16 +199,11 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-
-    public void UpdateLifePlayer(int life)
+    public void UpdateScore(int score)
     {
-        if (TextLife != null)
+        if (TextScore != null)
         {
-            TextLife.text = "x" + life;
-        }
-        if (lifeBar != null)
-        {
-            lifeBar.value = life;
+            TextScore.text = "Puntaje: " + score;
         }
     }
 }

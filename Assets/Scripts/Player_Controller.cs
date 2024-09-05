@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using System;
 using UnityEngine;
 using Unity.UI;
 using UnityEngine.SceneManagement;
@@ -15,6 +16,7 @@ public class Player_Controller : MonoBehaviour
     [SerializeField] private float speed;
     [SerializeField] private float jumpForce;
     [SerializeField] private int playerLife = 10;
+    [SerializeField] private int points;
 
     [Header("Raycast Properties")]
     [SerializeField] private Transform groundCheck;
@@ -28,6 +30,12 @@ public class Player_Controller : MonoBehaviour
 
     [Header("Manager")]
     [SerializeField] private GameManager gameManager;
+    [SerializeField] private UIManager uiManager;
+
+    public static event Action <int> OnPlayerLifeUpdate;
+    public static event Action <int> OnChangedScore;
+    public static event Action OnPlayerWin;
+    public static event Action OnPlayerLoose;
 
     private void Awake()
     {
@@ -36,8 +44,8 @@ public class Player_Controller : MonoBehaviour
     }
     private void Start()
     {
-        gameManager.UpdateLifePlayer(playerLife);
-
+        uiManager.UpdateLifePlayer(playerLife);
+        
     }
     void Update()
     {
@@ -94,14 +102,31 @@ public class Player_Controller : MonoBehaviour
             playerLife = 0;
         }
 
-        gameManager.UpdateLifePlayer(playerLife);
+        OnPlayerLifeUpdate?.Invoke(playerLife);
 
         if (playerLife == 0)
         {
             Debug.Log("Moriste");
-            gameManager.EndLevel(false);
-            this.gameObject.SetActive(false);
+            OnPlayerLoose?.Invoke();
+            if (gameObject != null)
+            {
+                gameObject.SetActive(false);
+            }
         }
+    }
+    public void HealPlayer(int healAmount)
+    {
+        playerLife += healAmount;
+        if(playerLife > 10)
+        {
+            playerLife = 10;
+        }
+        OnPlayerLifeUpdate?.Invoke(playerLife);
+    }
+    public void ChangeScore(int score)
+    {
+        points += score;
+        OnChangedScore?.Invoke(points);
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -114,12 +139,17 @@ public class Player_Controller : MonoBehaviour
                 mySprite.color == Color.blue && enemyColor == Color.blue ||
                 mySprite.color == Color.yellow && enemyColor == Color.yellow)
             {
-                Debug.Log("No recibes daño, son el mismo color");
+                Debug.Log("No recibes daÃ±o, son el mismo color");
             }
             else
             {
                 TakeDamage(1);
             }
+        }
+        else if (collision.gameObject.CompareTag("Corazon"))
+        {
+            HealPlayer(2);
+            Destroy(collision.gameObject);
         }
         else if (collision.gameObject.CompareTag("Meta"))
         {   
@@ -134,9 +164,14 @@ public class Player_Controller : MonoBehaviour
         }
         else if (collision.gameObject.CompareTag("Final"))
         {
-            gameManager.EndLevel(true);
+            OnPlayerWin?.Invoke();
             Debug.Log("Ganaste");
-        }       
+        }
+        else if (collision.gameObject.CompareTag("Coin"))
+        {
+            ChangeScore(3);
+            Destroy(collision.gameObject);
+        }
     }
     private void OnTriggerExit2D(Collider2D collision)
     {
@@ -144,5 +179,12 @@ public class Player_Controller : MonoBehaviour
         {
             isColliding = false;
         }
+    }
+    private void OnDisable()
+    {
+        OnPlayerLifeUpdate = null;
+        OnChangedScore = null;
+        OnPlayerWin = null;
+        OnPlayerLoose = null;
     }
 }
