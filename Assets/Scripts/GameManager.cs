@@ -152,7 +152,10 @@ public class GameManager : MonoBehaviour
 
         finalTimeText.text = TimerText.text;
 
-        resultsPanel.SetActive(true);
+        if(resultsPanel != null)
+        {
+            resultsPanel.SetActive(true);
+        }
     }
     public void HandlePlayerWin()
     {

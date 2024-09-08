@@ -1,10 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using System;
 using UnityEngine;
-using Unity.UI;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System;
 
 public class Player_Controller : MonoBehaviour
 {
@@ -32,30 +31,41 @@ public class Player_Controller : MonoBehaviour
     [SerializeField] private GameManager gameManager;
     [SerializeField] private UIManager uiManager;
 
-    public static event Action <int> OnPlayerLifeUpdate;
-    public static event Action <int> OnChangedScore;
+    [Header("Input Controller")]
+    [SerializeField] private Imput_Controller inputController;
+
+    public static event Action<int> OnPlayerLifeUpdate;
+    public static event Action<int> OnChangedScore;
     public static event Action OnPlayerWin;
     public static event Action OnPlayerLoose;
 
+    private void OnEnable()
+    {
+        Imput_Controller.Movement2D += HandleMovement;
+        Imput_Controller.AxisMovement += HandleAxisMovement;
+        Imput_Controller.OnJump += HandleJump;
+    }
     private void Awake()
     {
-        myRBD = GetComponent<Rigidbody2D>();    
+        myRBD = GetComponent<Rigidbody2D>();
         mySprite = GetComponent<SpriteRenderer>();
     }
     private void Start()
     {
         uiManager.UpdateLifePlayer(playerLife);
-        
     }
-    void Update()
+    private void HandleMovement(Vector2 movement)
     {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        direction = new Vector2(horizontal, 0).normalized;
+        direction = new Vector2(movement.x, 0).normalized;
+    }
 
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            isJumping = true;
-        }
+    private void HandleAxisMovement(float axis)
+    {
+        direction = new Vector2(axis, 0).normalized;
+    }
+    private void HandleJump()
+    {
+        isJumping = true;
     }
     private void FixedUpdate()
     {
@@ -117,7 +127,7 @@ public class Player_Controller : MonoBehaviour
     public void HealPlayer(int healAmount)
     {
         playerLife += healAmount;
-        if(playerLife > 10)
+        if (playerLife > 10)
         {
             playerLife = 10;
         }
@@ -152,7 +162,7 @@ public class Player_Controller : MonoBehaviour
             Destroy(collision.gameObject);
         }
         else if (collision.gameObject.CompareTag("Meta"))
-        {   
+        {
             SceneManager.LoadScene("Game 2");
         }
         else if (collision.gameObject.CompareTag("Limite"))
@@ -173,6 +183,7 @@ public class Player_Controller : MonoBehaviour
             Destroy(collision.gameObject);
         }
     }
+
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Enemy"))
@@ -180,8 +191,13 @@ public class Player_Controller : MonoBehaviour
             isColliding = false;
         }
     }
+
     private void OnDisable()
     {
+        Imput_Controller.Movement2D -= HandleMovement;
+        Imput_Controller.AxisMovement -= HandleAxisMovement;
+        Imput_Controller.OnJump -= HandleJump;
+
         OnPlayerLifeUpdate = null;
         OnChangedScore = null;
         OnPlayerWin = null;
