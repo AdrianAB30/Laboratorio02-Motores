@@ -715,8 +715,8 @@ PlayerSettings:
   apiCompatibilityLevelPerPlatform: {}
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: Laboratorio02 Motores
-  metroPackageVersion: 
+  metroPackageName: Laboratorio02Motores
+  metroPackageVersion: 1.0.0.0
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
@@ -724,7 +724,7 @@ PlayerSettings:
   metroCertificateNotAfter: 0000000000000000
   metroApplicationDescription: Laboratorio02 Motores
   wsaImages: {}
-  metroTileShortName: 
+  metroTileShortName: Laboratorio02 Motores
   metroTileShowName: 0
   metroMediumTileShowName: 0
   metroLargeTileShowName: 0
@@ -788,7 +788,7 @@ PlayerSettings:
   hmiLogStartupTiming: 0
   hmiCpuConfiguration: 
   apiCompatibilityLevel: 6
-  activeInputHandler: 0
+  activeInputHandler: 1
   windowsGamepadBackendHint: 0
   cloudProjectId: 381652a5-c909-4936-a743-01b2c1836a63
   framebufferDepthMemorylessMode: 0

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System;
+using UnityEngine.InputSystem;
 
 public class Player_Controller : MonoBehaviour
 {
@@ -24,27 +25,18 @@ public class Player_Controller : MonoBehaviour
 
     [Header("Jump Controllers")]
     private bool isJumping;
-    [SerializeField] private bool hasDoubleJump;
-    [SerializeField] private bool canJump;
+    private bool hasDoubleJump;
+    private bool canJump;
 
     [Header("Manager")]
     [SerializeField] private GameManager gameManager;
     [SerializeField] private UIManager uiManager;
-
-    [Header("Input Controller")]
-    [SerializeField] private Imput_Controller inputController;
 
     public static event Action<int> OnPlayerLifeUpdate;
     public static event Action<int> OnChangedScore;
     public static event Action OnPlayerWin;
     public static event Action OnPlayerLoose;
 
-    private void OnEnable()
-    {
-        Imput_Controller.Movement2D += HandleMovement;
-        Imput_Controller.AxisMovement += HandleAxisMovement;
-        Imput_Controller.OnJump += HandleJump;
-    }
     private void Awake()
     {
         myRBD = GetComponent<Rigidbody2D>();
@@ -53,19 +45,6 @@ public class Player_Controller : MonoBehaviour
     private void Start()
     {
         uiManager.UpdateLifePlayer(playerLife);
-    }
-    private void HandleMovement(Vector2 movement)
-    {
-        direction = new Vector2(movement.x, 0).normalized;
-    }
-
-    private void HandleAxisMovement(float axis)
-    {
-        direction = new Vector2(axis, 0).normalized;
-    }
-    private void HandleJump()
-    {
-        isJumping = true;
     }
     private void FixedUpdate()
     {
@@ -79,12 +58,27 @@ public class Player_Controller : MonoBehaviour
             {
                 myRBD.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
                 isJumping = false;
+                hasDoubleJump = true;
             }
             else if (hasDoubleJump)
             {
                 myRBD.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-                hasDoubleJump = false;
+                hasDoubleJump = true;
                 isJumping = false;
+            }
+        }
+    }
+    public void InputReadDirection(InputAction.CallbackContext context)
+    {
+        direction.x = context.ReadValue<float>();
+    }
+    public void InputReadJump(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            if (canJump)
+            {
+                isJumping = true;
             }
         }
     }
@@ -191,13 +185,8 @@ public class Player_Controller : MonoBehaviour
             isColliding = false;
         }
     }
-
     private void OnDisable()
     {
-        Imput_Controller.Movement2D -= HandleMovement;
-        Imput_Controller.AxisMovement -= HandleAxisMovement;
-        Imput_Controller.OnJump -= HandleJump;
-
         OnPlayerLifeUpdate = null;
         OnChangedScore = null;
         OnPlayerWin = null;
